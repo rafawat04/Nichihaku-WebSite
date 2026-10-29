@@ -28,17 +28,9 @@ reference a script puts together while the page runs (for example
 Serve the folder (e.g. `python3 -m http.server`) and open `Main.dc.html`;
 some browsers block the scripts over file://.
 
-## Combined site for Cloudflare Pages
+## Site
 
-This folder now contains a deployable static site with all three pages on one domain:
-
-- `index.html` — Nichihaku home page (`/`)
-- `uns-n/index.html` — UNS→N brand page (`/uns-n/`)
-- `uns-n/works/index.html` — corporate services page (`/uns-n/works/`)
-
-The original `Main.dc.html` stays as the source export. The two UNS→N pages have their own `assets/`, `vendor/`, and `support.js` files so their relative file references continue to work after deployment. The source exports in the sibling folders are unchanged.
-
-For Cloudflare Pages, use this folder as the static site root / build output directory and leave the build command empty. `index.html` is the entry page. You can preview locally by running `python3 -m http.server 8000` in this folder and opening `http://localhost:8000/`.
+`index.html` is the Nichihaku home page served at https://nichihaku.com. The UNS→N pages live in their own repository and are served at https://uns-n.com.
 
 ## Contact form
 
@@ -47,8 +39,6 @@ The home page form (09 — CONTACT) posts to `/api/contact`, handled by the Clou
 - `RESEND_API_KEY` — Resend API key (secret)
 - `CONTACT_TO` — recipients, comma-separated
 - `CONTACT_FROM` — sender on the verified domain, e.g. `Nichihaku <contact@nichihaku.com>`
-
-The forms on the UNS→N pages are still visual only (`action="#"`).
 
 ## Deploy
 
