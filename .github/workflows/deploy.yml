@@ -1,0 +1,29 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Publish only the site; README, Main.dc.html and this workflow stay private.
+      - name: Collect site files
+        run: |
+          mkdir dist
+          cp -R index.html support.js assets vendor functions dist/
+
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 051780c6debf27080cb3317cd5dc8887
+          workingDirectory: dist
+          command: pages deploy . --project-name nichihaku --branch main

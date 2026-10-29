@@ -42,8 +42,6 @@ The home page form (09 — CONTACT) posts to `/api/contact`, handled by the Clou
 
 ## Deploy
 
-```bash
-npx wrangler pages deploy . --project-name nichihaku --branch main
-```
+Every push to `main` deploys to the Cloudflare Pages project `nichihaku` through GitHub Actions (`.github/workflows/deploy.yml`). The workflow needs a `CLOUDFLARE_API_TOKEN` repository secret with Cloudflare Pages edit permission. It can also be run by hand from the Actions tab.
 
 The site is served at https://nichihaku.com (Cloudflare Pages project `nichihaku`). DNS is on Cloudflare; mail for @nichihaku.com stays on Xserver via the `mail` A record and MX.
