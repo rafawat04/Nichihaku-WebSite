@@ -258,6 +258,7 @@ a{color:#16181A}a:hover{color:#4A4E53}
 <div style="display: flex; flex-direction: column; gap: 8px"><label for="f-mail" style="font-size: 13px; color: #D6D3CC">メールアドレス <span style="color: #F5F4F0">*</span></label><input id="f-mail" name="email" type="email" required="required" autocomplete="email" style="min-height: 48px; padding: 0 14px; background: transparent; border: 1px solid #6B6E72; color: #F5F4F0; font: inherit"></div>
 <div style="display: flex; flex-direction: column; gap: 8px"><label for="f-type" style="font-size: 13px; color: #D6D3CC">ご相談の種類</label><select id="f-type" name="type" style="min-height: 48px; padding: 0 14px; background: #16181A; border: 1px solid #6B6E72; color: #F5F4F0; font: inherit"><option>協業のご相談</option><option>事業に関するご相談</option><option>取材・その他</option></select></div>
 <div style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px"><label for="f-body" style="font-size: 13px; color: #D6D3CC">ご相談内容 <span style="color: #F5F4F0">*</span></label><textarea id="f-body" name="message" rows="6" required="required" style="padding: 14px; background: transparent; border: 1px solid #6B6E72; color: #F5F4F0; font: inherit; resize: vertical"></textarea></div>
+<div id="contact-turnstile" style="grid-column: 1 / -1; min-height: 65px"></div>
 <div style="grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
 <label style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #D6D3CC; min-height: 44px"><input type="checkbox" name="agree" required="required" style="width: 18px; height: 18px"><span><a href="#privacy" style="color: #F5F4F0">プライバシーポリシー</a>に同意する</span></label>
 <button type="submit" style="min-height: 52px; padding: 0 40px; background: #F5F4F0; color: #16181A; border: 0; border-radius: 999px; font: inherit; font-weight: 700; cursor: pointer">送信する</button>
@@ -292,7 +293,18 @@ return { accent: this.props.accent ?? '#1F4FD1' };
 }
 }
 </script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 <script>
+// The form is rendered by support.js, so wait for both it and Turnstile before mounting the widget.
+(function mountTurnstile() {
+  var box = document.getElementById('contact-turnstile');
+  if (!window.turnstile || !box) return setTimeout(mountTurnstile, 200);
+  if (!box.dataset.mounted) {
+    box.dataset.mounted = '1';
+    turnstile.render(box, { sitekey: '0x4AAAAAAFsUKFfJG43lMrVr', language: 'ja', theme: 'dark' });
+  }
+})();
+
 document.addEventListener('submit', async function (e) {
   var form = e.target;
   if (form.id !== 'contact-form') return;
@@ -303,6 +315,10 @@ document.addEventListener('submit', async function (e) {
   status.textContent = '送信中です…';
   try {
     var res = await fetch('/api/contact', { method: 'POST', body: new FormData(form) });
+    if (res.status === 403) {
+      status.textContent = '送信前の確認が完了していません。チェックが表示されている場合は完了してから再度お試しください。';
+      return;
+    }
     if (!res.ok) throw new Error(res.status);
     form.reset();
     status.textContent = 'お問い合わせを受け付けました。担当者より折り返しご連絡いたします。';
@@ -310,6 +326,7 @@ document.addEventListener('submit', async function (e) {
     status.textContent = '送信に失敗しました。時間をおいて再度お試しください。';
   } finally {
     button.disabled = false;
+    if (window.turnstile) turnstile.reset(document.getElementById('contact-turnstile'));
   }
 });
 </script>
